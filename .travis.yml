@@ -1,0 +1,16 @@
+language: java
+jdk:
+  - openjdk8
+before_script:
+  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+  - chmod +x ./cc-test-reporter
+  - ./cc-test-reporter before-build
+  - chmod +x gradlew
+script:
+  - ./gradlew check
+  - ./gradlew test
+  - ./gradlew jacocoTestReport
+after_success:
+  - mv "./build/reports/jacoco/report.xml" "./src/main/kotlin/jacoco.xml"
+  - cd ./src/main/kotlin/
+  - ../../../cc-test-reporter after-build -t jacoco --exit-code $TRAVIS_TEST_RESULT
