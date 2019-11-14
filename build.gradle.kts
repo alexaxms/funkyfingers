@@ -60,7 +60,7 @@ tasks.jacocoTestReport {
 		xml.isEnabled = true
 		csv.isEnabled = false
 		xml.destination = file("${buildDir}/reports/jacoco/report.xml")
-		html.destination = file("${buildDir}/jacocoHtml")
+		html.destination = file("${buildDir}/reports/coverage")
 	}
 }
 
@@ -84,6 +84,12 @@ tasks.jacocoTestCoverageVerification {
 			}
 		}
 	}
+	classDirectories.setFrom(
+			sourceSets.main.get().output.asFileTree.matching {
+				// exclude main()
+				exclude("com/alexmunoz/funkyfingers/FunkyfingersApplication.kt")
+			}
+	)
 }
 
 tasks.test {
@@ -102,4 +108,14 @@ tasks.test {
 		port = 6300
 		isJmx = false
 	}
+}
+
+val testCoverage by tasks.registering {
+	group = "verification"
+	description = "Runs the unit tests with coverage."
+
+	dependsOn(":test", ":jacocoTestReport", ":jacocoTestCoverageVerification")
+	val jacocoTestReport = tasks.findByName("jacocoTestReport")
+	jacocoTestReport?.mustRunAfter(tasks.findByName("test"))
+	tasks.findByName("jacocoTestCoverageVerification")?.mustRunAfter(jacocoTestReport)
 }

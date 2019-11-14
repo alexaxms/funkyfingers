@@ -8,8 +8,7 @@ before_script:
   - chmod +x gradlew
 script:
   - ./gradlew check
-  - ./gradlew test
-  - ./gradlew jacocoTestReport
+  - ./gradlew testCoverage
 after_success:
   - mv "./build/reports/jacoco/report.xml" "./src/main/kotlin/jacoco.xml"
   - cd ./src/main/kotlin/
