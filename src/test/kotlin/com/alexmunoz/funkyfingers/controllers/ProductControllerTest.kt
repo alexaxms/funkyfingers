@@ -26,9 +26,11 @@ class ProductControllerTest {
 
     private fun mockProduct(
             id: Int,
-            name: String = "name$id"
+            title: String = "title$id",
+            description: String = "description$id",
+            imageUrl: String = "image$id"
     ): Product {
-        return Product(id = id, name = name)
+        return Product(id = id, title = title, description = description, imageUrl = imageUrl)
     }
 
     @Test
