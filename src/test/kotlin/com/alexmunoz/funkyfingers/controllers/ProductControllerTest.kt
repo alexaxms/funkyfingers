@@ -25,7 +25,7 @@ class ProductControllerTest {
     }
 
     private fun mockProduct(
-            id: Int,
+            id: Long,
             title: String = "title$id",
             description: String = "description$id",
             imageUrl: String = "image$id"

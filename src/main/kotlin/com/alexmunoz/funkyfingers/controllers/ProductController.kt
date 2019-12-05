@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import java.util.*
 
+@CrossOrigin(origins = ["http://localhost:3000"], maxAge = 3600)
 @RestController
 @RequestMapping("/products")
 class ProductController(val productRepository: ProductRepository) {
