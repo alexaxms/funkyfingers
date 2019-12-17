@@ -1,46 +1,49 @@
-import com.alexmunoz.funkyfingers.controllers.ProductController
+package com.alexmunoz.funkyfingers.controllers
+
 import com.alexmunoz.funkyfingers.entities.Product
-import com.alexmunoz.funkyfingers.repositories.ProductRepository
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.BeforeAll
+import com.alexmunoz.funkyfingers.exceptions.ProductNotFoundException
+import com.alexmunoz.funkyfingers.services.ProductService
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
-import org.mockito.InjectMocks
-import org.mockito.Mockito
+import org.mockito.BDDMockito.given
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
+import org.springframework.boot.test.mock.mockito.MockBean
+import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 import java.util.*
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@WebMvcTest(ProductController::class)
 class ProductControllerTest {
-    @InjectMocks
-    lateinit var productController: ProductController
-    private val product1 = mockProduct(1)
+    @Autowired
+    lateinit var mockMvc: MockMvc
 
-    @BeforeAll
-    fun setup(){
-        val repository = Mockito.mock(ProductRepository::class.java)
-        Mockito.`when`(repository.findAll()).thenReturn(listOf(product1))
-        Mockito.`when`(repository.findById(1)).thenReturn(Optional.of(product1))
-        productController = ProductController(repository)
-    }
+    @MockBean
+    lateinit var productService: ProductService
 
-    private fun mockProduct(
-            id: Long,
-            title: String = "title$id",
-            description: String = "description$id",
-            imageUrl: String = "image$id"
-    ): Product {
-        return Product(id = id, title = title, description = description, imageUrl = imageUrl)
+    @Test
+    fun getProduct_ShouldReturnProduct() {
+        given(productService.findById(1)).willReturn(Optional.of(Product(1, "title", "description")))
+        mockMvc.perform(MockMvcRequestBuilders.get("/products/1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("title").value("title"))
+                .andExpect(jsonPath("description").value("description"))
     }
 
     @Test
-    fun getProducts() {
-        assertNotNull(productController.getProducts())
+    fun getProduct_notFound(){
+        given(productService.findById(2)).willThrow(ProductNotFoundException())
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/products/2"))
+                .andExpect(status().isNotFound)
     }
 
     @Test
-    fun getProductById() {
-        product1
-        assertEquals(Optional.of(product1), productController.getProduct(1))
+    fun getAllProduct_ShouldReturnProducts() {
+        given(productService.findAll()).willReturn(listOf(Product(1, "title", "description"),Product(2, "title", "description")))
+        mockMvc.perform(MockMvcRequestBuilders.get("/products"))
+                .andExpect(status().isOk())
+                .andExpect(content().json("[{'id':1,'title':'title','description':'description','imageUrl':null},{'id':2,'title':'title','description':'description','imageUrl':null}]"))
     }
+
 }

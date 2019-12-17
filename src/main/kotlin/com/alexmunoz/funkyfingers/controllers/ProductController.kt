@@ -1,38 +1,43 @@
 package com.alexmunoz.funkyfingers.controllers
 
 import com.alexmunoz.funkyfingers.entities.Product
-import com.alexmunoz.funkyfingers.repositories.ProductRepository
+import com.alexmunoz.funkyfingers.exceptions.ProductNotFoundException
+import com.alexmunoz.funkyfingers.services.ProductService
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import java.util.*
 
-@CrossOrigin(origins = ["http://localhost:3000"], maxAge = 3600)
+@CrossOrigin
 @RestController
 @RequestMapping("/products")
-class ProductController(val productRepository: ProductRepository) {
+class ProductController(val productService: ProductService) {
 
     @GetMapping
-    fun getProducts(): List<Product> = productRepository.findAll()
+    fun getProducts(): List<Product> = productService.findAll()
 
-    @RequestMapping(path = [("/{productId}")], method = [(RequestMethod.GET)])
+    @GetMapping("{productId}")
     fun getProduct(@PathVariable("productId") productId: Long): Optional<Product>? =
-         productRepository.findById(productId)
+            productService.findById(productId)
 
 
     @PostMapping
     fun createProduct(@RequestBody product: Product): Product {
-        productRepository.save(product)
+        productService.save(product)
         return product
     }
 
     @PutMapping
     @ResponseStatus(HttpStatus.OK)
     fun updateProduct(product: Product) {
-        productRepository.save(product)
+        productService.save(product)
     }
 
-    @RequestMapping(path = [("/{productId}")], method = [(RequestMethod.DELETE)])
+    @DeleteMapping("{productId}")
     fun deleteProduct(@PathVariable("productId") productId: Long) {
-        productRepository.deleteById(productId)
+        productService.deleteById(productId)
     }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    fun productNotFoundHandler(ex: ProductNotFoundException){}
 }
